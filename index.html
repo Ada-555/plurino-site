@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plurino — Web Development & Automation for Irish Small Businesses</title>
+    <meta name="description" content="Plurino builds websites, automation systems, and digital tools for small Irish businesses. Helping you save time and grow online.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-deep: #030308;
+            --bg-card: rgba(255,255,255,0.02);
+            --border: rgba(255,255,255,0.06);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255,255,255,0.7);
+            --text-muted: rgba(255,255,255,0.4);
+            --neon-green: #00ff41;
+            --neon-green-dim: #00cc33;
+            --neon-cyan: #00d4ff;
+            --neon-purple: #bf00ff;
+            --neon-blue: #0080ff;
+            --neon-pink: #ff0080;
+            --gold: #ffd700;
+        }
+        
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* Scanlines overlay */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.03),
+                rgba(0, 0, 0, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(3,3,8,0.92);
+            backdrop-filter: blur(20px);
+        }
+        
+        nav::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-green), var(--neon-cyan), transparent);
+            opacity: 0.4;
+        }
+        
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        .logo span { 
+            color: var(--neon-green);
+            text-shadow: 0 0 20px var(--neon-green);
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+        
+        nav a {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        nav a:hover { 
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+        
+        .nav-cta {
+            padding: 10px 20px;
+            background: var(--neon-green);
+            color: #000 !important;
+            border-radius: 6px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,255,65,0.3);
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 120px 40px 80px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-content {
+            max-width: 950px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        /* Irish Flag accent */
+        .irish-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(0,255,65,0.05);
+            border: 1px solid rgba(0,255,65,0.2);
+            border-radius: 50px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--neon-green);
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .irish-badge .flag {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .irish-badge .flag span {
+            width: 12px;
+            height: 16px;
+            border-radius: 2px;
+        }
+        
+        .irish-badge .flag .orange { background: #FF883E; }
+        .irish-badge .flag .white { background: #fff; }
+        .irish-badge .flag .green { background: #169B62; }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 28px;
+        }
+        
+        .hero h1 .line {
+            display: block;
+            opacity: 0;
+            animation: glitchIn 0.8s ease forwards;
+        }
+        
+        .hero h1 .line:nth-child(1) { animation-delay: 0.2s; }
+        .hero h1 .line:nth-child(2) { animation-delay: 0.4s; }
+        
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @keyframes glitchIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: glitchIn 0.8s ease 0.6s forwards;
+        }
+        
+        .hero-subtitle strong {
+            color: var(--neon-green);
+        }
+        
+        .hero-services {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 48px;
+            opacity: 0;
+            animation: glitchIn 0.8s ease 0.7s forwards;
+        }
+        
+        .hero-service {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--neon-cyan);
+        }
+        
+        .hero-cta-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            opacity: 0;
+            animation: glitchIn 0.8s ease 0.8s forwards;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .btn-primary {
+            background: var(--neon-green);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0,255,65,0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 2px solid rgba(0,212,255,0.4);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0,212,255,0.1);
+            transform: translateY(-4px);
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            animation: glitchIn 0.8s ease 1s forwards;
+        }
+        
+        .scroll-indicator span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        
+        .scroll-indicator .arrow {
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
+            transform: rotate(45deg);
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: rotate(45deg) translateY(0); }
+            50% { transform: rotate(45deg) translateY(8px); }
+        }
+        
+        /* Sections */
+        section {
+            padding: 120px 40px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .section-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--neon-green);
+            margin-bottom: 16px;
+            text-shadow: 0 0 20px rgba(0,255,65,0.5);
+        }
+        
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+        }
+        
+        .section-title .highlight {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 30px rgba(0,212,255,0.4);
+        }
+        
+        .section-intro {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 60px;
+            max-width: 700px;
+        }
+        
+        /* Founder Section */
+        #founder { background: linear-gradient(180deg, transparent 0%, rgba(0,255,65,0.02) 50%, transparent 100%); }
+        
+        .founder-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        
+        .founder-avatar {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: 800;
+            color: #000;
+        }
+        
+        .founder-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--neon-green);
+        }
+        
+        .founder-info .role {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+        }
+        
+        .founder-info p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        
+        .founder-skills {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .skill-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            background: rgba(0,255,65,0.08);
+            border: 1px solid rgba(0,255,65,0.2);
+            border-radius: 6px;
+            color: var(--neon-green);
+        }
+        
+        /* Services Section */
+        #services { background: var(--bg-deep); }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--neon-green);
+            transform: scaleY(0);
+            transition: transform 0.4s;
+        }
+        
+        .service-card:hover::before { transform: scaleY(1); }
+        
+        .service-card:hover {
+            border-color: rgba(0,255,65,0.2);
+            background: rgba(0,255,65,0.03);
+            transform: translateY(-6px);
+            box-shadow: 0 30px 80px rgba(0,255,65,0.1);
+        }
+        
+        .service-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .service-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            line-height: 1.75;
+            margin-bottom: 16px;
+        }
+        
+        .service-price {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            padding: 8px 12px;
+            background: rgba(0,212,255,0.08);
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        /* Pricing */
+        #pricing {
+            background: linear-gradient(180deg, transparent 0%, rgba(0,212,255,0.02) 50%, transparent 100%);
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px 32px;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--neon-green);
+            background: rgba(0,255,65,0.03);
+        }
+        
+        .pricing-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 6px 16px;
+            background: var(--neon-green);
+            color: #000;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 80px rgba(0,255,65,0.1);
+        }
+        
+        .pricing-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .pricing-card .price {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            margin-bottom: 8px;
+        }
+        
+        .pricing-card .price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .pricing-card .desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--neon-green);
+            font-weight: bold;
+        }
+        
+        /* Target Market */
+        #market { background: var(--bg-deep); }
+        
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .market-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.4s;
+        }
+        
+        .market-card:hover {
+            border-color: rgba(0,212,255,0.3);
+            transform: translateY(-4px);
+        }
+        
+        .market-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+        
+        .market-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .market-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        /* Process */
+        #process {
+            background: linear-gradient(180deg, transparent 0%, rgba(191,0,255,0.02) 50%, transparent 100%);
+        }
+        
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .process-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .process-step::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
+            font-size: 1.5rem;
+        }
+        
+        .process-step:last-child::after { display: none; }
+        
+        .process-step:hover {
+            border-color: rgba(0,212,255,0.2);
+        }
+        
+        .process-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            opacity: 0.5;
+            margin-bottom: 16px;
+        }
+        
+        .process-step h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .process-step p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        /* Examples */
+        #examples {
+            background: var(--bg-deep);
+        }
+        
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .example-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px;
+            transition: all 0.4s;
+        }
+        
+        .example-card:hover {
+            border-color: rgba(0,255,65,0.2);
+            transform: translateY(-4px);
+        }
+        
+        .example-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+        
+        .example-header h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .example-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            background: rgba(0,255,65,0.1);
+            border: 1px solid rgba(0,255,65,0.2);
+            border-radius: 20px;
+            color: var(--neon-green);
+        }
+        
+        .example-card > p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        
+        .example-result {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--neon-cyan);
+            padding: 12px 16px;
+            background: rgba(0,212,255,0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--neon-cyan);
+        }
+        
+        /* CTA */
+        .cta {
+            padding: 140px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0,255,65,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        
+        .cta-box {
+            max-width: 650px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .cta h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+        
+        .cta p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+        
+        .cta-email {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            color: var(--neon-green);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 40px;
+            background: rgba(0,255,65,0.05);
+            border: 2px solid rgba(0,255,65,0.3);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .cta-email:hover {
+            background: rgba(0,255,65,0.1);
+            border-color: var(--neon-green);
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(0,255,65,0.3);
+        }
+        
+        /* Footer */
+        footer {
+            padding: 60px 40px;
+            border-top: 1px solid rgba(0,255,65,0.1);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        footer .logo {
+            margin-bottom: 12px;
+        }
+        
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        footer p.sub {
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(0,255,65,0.4);
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            nav { padding: 16px 20px; }
+            nav ul { display: none; }
+            section { padding: 80px 20px; }
+            .hero { padding: 100px 20px 80px; }
+            .founder-grid { grid-template-columns: 1fr; }
+            .founder-avatar { width: 150px; height: 150px; font-size: 3rem; }
+            .services-grid, .pricing-grid, .process-grid { grid-template-columns: repeat(2, 1fr); }
+            .process-step::after { display: none; }
+            .market-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 600px) {
+            .hero h1 { letter-spacing: -0.025em; }
+            .services-grid, .pricing-grid, .process-grid, .market-grid, .examples-grid { grid-template-columns: 1fr; }
+            .cta { padding: 100px 20px; }
+            .cta-email { font-size: 1rem; padding: 16px 28px; }
+        }
+        
+        /* Fade in animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="scanlines"></div>
+    
+    <nav>
+        <div class="logo">Plur<span>.</span>ino</div>
+        <ul>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#market">Who We Help</a></li>
+            <li><a href="#examples">Examples</a></li>
+            <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+        </ul>
+    </nav>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <div class="irish-badge">
+                <div class="flag">
+                    <span class="orange"></span>
+                    <span class="white"></span>
+                    <span class="green"></span>
+                </div>
+                Irish-Owned Small Business
+            </div>
+            
+            <h1>
+                <span class="line">Websites & Automation</span>
+                <span class="line gradient">for Irish Businesses</span>
+            </h1>
+            
+            <p class="hero-subtitle">We build <strong>professional websites</strong> and <strong>automation systems</strong> for small Irish businesses—helping you save time, look professional online, and grow.</p>
+            
+            <div class="hero-services">
+                <span class="hero-service">Websites</span>
+                <span class="hero-service">Booking Systems</span>
+                <span class="hero-service">CRM Automation</span>
+                <span class="hero-service">Online Shops</span>
+            </div>
+            
+            <div class="hero-cta-group">
+                <a href="#contact" class="btn btn-primary">Get a Free Quote →</a>
+                <a href="#services" class="btn btn-secondary">View Services</a>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="arrow"></div>
+        </div>
+    </section>
+    
+    <section id="founder">
+        <div class="section-inner">
+            <div class="section-label">The Founder</div>
+            <h2 class="section-title">Meet <span class="highlight">Kay</span></h2>
+            
+            <div class="founder-grid">
+                <div class="founder-avatar">KD</div>
+                <div class="founder-info">
+                    <h3>Kieran D.</h3>
+                    <div class="role">Founder & Developer — Plurino</div>
+                    <p>I'm a developer based in Dublin, Ireland, with a strong interest in building efficient, automated systems. I started Plurino to help small Irish businesses get the same quality digital tools that large companies have—without the complexity or cost.</p>
+                    <p>I believe every local business deserves a professional online presence and smart systems that save them time. Whether you're a tradesperson, a salon owner, or a startup founder, I can build something that works for you.</p>
+                    <div class="founder-skills">
+                        <span class="skill-tag">Web Development</span>
+                        <span class="skill-tag">Automation</span>
+                        <span class="skill-tag">Systems Design</span>
+                        <span class="skill-tag">Irish Business</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="services">
+        <div class="section-inner">
+            <div class="section-label">What We Do</div>
+            <h2 class="section-title">Services For <span class="highlight">Small Businesses</span></h2>
+            <p class="section-intro">Clear, practical solutions. Everything we build is designed to save you time and help your business grow.</p>
+            
+            <div class="services-grid">
+                <div class="service-card fade-in">
+                    <div class="service-icon">🌐</div>
+                    <h3>Business Websites</h3>
+                    <p>Professional, fast-loading websites that make your business look credible and help customers find you. Mobile-responsive and SEO-ready.</p>
+                    <span class="service-price">From €800</span>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">📅</div>
+                    <h3>Booking Systems</h3>
+                    <p>Let customers book appointments online—automatically. Integrates with your calendar and sends reminders. No more phone tag.</p>
+                    <span class="service-price">From €500</span>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">🛒</div>
+                    <h3>Online Shops</h3>
+                    <p>Simple e-commerce setups for selling products online. Automated order handling, inventory management, and payment processing.</p>
+                    <span class="service-price">From €1,200</span>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">🔄</div>
+                    <h3>CRM Automation</h3>
+                    <p>Automate follow-ups, lead tracking, and customer communication. Spend less time on admin, more time on customers.</p>
+                    <span class="service-price">From €600</span>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">📱</div>
+                    <h3>Business Tools</h3>
+                    <p>Custom tools for quotes, invoicing, scheduling—whatever your business needs to run smoother.</p>
+                    <span class="service-price">Quoted</span>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">🤖</div>
+                    <h3>AI Integrations</h3>
+                    <p>Add smart automation to your workflows. Chatbots, auto-responses, data processing—AI handles the repetitive stuff.</p>
+                    <span class="service-price">From €400</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="pricing">
+        <div class="section-inner">
+            <div class="section-label">Pricing</div>
+            <h2 class="section-title">Straightforward <span class="highlight">Packages</span></h2>
+            <p class="section-intro">No hidden costs. Clear pricing so you know exactly what you're getting.</p>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card fade-in">
+                    <h4>Starter</h4>
+                    <div class="price">€800<span>/project</span></div>
+                    <p class="desc">Perfect for new businesses</p>
+                    <ul class="pricing-features">
+                        <li>5-page professional website</li>
+                        <li>Mobile responsive</li>
+                        <li>Contact form</li>
+                        <li>Basic SEO setup</li>
+                        <li>2 weeks delivery</li>
+                    </ul>
+                </div>
+                <div class="pricing-card featured fade-in">
+                    <h4>Growth</h4>
+                    <div class="price">€1,500<span>/project</span></div>
+                    <p class="desc">Most popular choice</p>
+                    <ul class="pricing-features">
+                        <li>Everything in Starter</li>
+                        <li>Booking or shop functionality</li>
+                        <li>Email automation</li>
+                        <li>Analytics setup</li>
+                        <li>1 month free support</li>
+                    </ul>
+                </div>
+                <div class="pricing-card fade-in">
+                    <h4>Automation</h4>
+                    <div class="price">€200<span>/month</span></div>
+                    <p class="desc">Ongoing optimisation</p>
+                    <ul class="pricing-features">
+                        <li>Monthly website updates</li>
+                        <li>Performance monitoring</li>
+                        <li>Backup & security</li>
+                        <li>Email support</li>
+                        <li>Priority response</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="market">
+        <div class="section-inner">
+            <div class="section-label">Who We Help</div>
+            <h2 class="section-title">Built For <span class="highlight">Irish Small Business</span></h2>
+            <p class="section-intro">We work with local businesses who need professional digital presence without enterprise complexity.</p>
+            
+            <div class="market-grid">
+                <div class="market-card fade-in">
+                    <div class="market-icon">🔧</div>
+                    <h4>Tradespeople</h4>
+                    <p>Plumbers, electricians, builders</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">💇</div>
+                    <h4>Beauty & Wellness</h4>
+                    <p>Salons, barbers, therapists</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">🏋️</div>
+                    <h4>Health & Fitness</h4>
+                    <p>Personal trainers, yoga instructors</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">🎨</div>
+                    <h4>Creatives</h4>
+                    <p>Photographers, artists, designers</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">🍽️</div>
+                    <h4>Food & Drink</h4>
+                    <p>Cafes, caterers, food trucks</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">📚</div>
+                    <h4>Tutors & Coaches</h4>
+                    <p>Teachers, life coaches</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">🏪</div>
+                    <h4>Retail</h4>
+                    <p>Small shops, market traders</p>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-icon">🚀</div>
+                    <h4>Startups</h4>
+                    <p>New Irish businesses</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="process">
+        <div class="section-inner">
+            <div class="section-label">How It Works</div>
+            <h2 class="section-title">Simple <span class="highlight">4-Step Process</span></h2>
+            <p class="section-intro">From first chat to live website—we make it straightforward.</p>
+            
+            <div class="process-grid">
+                <div class="process-step fade-in">
+                    <div class="process-number">01</div>
+                    <h4>Chat</h4>
+                    <p>We discuss what you need—no jargon, just practical solutions.</p>
+                </div>
+                <div class="process-step fade-in">
+                    <div class="process-number">02</div>
+                    <h4>Quote</h4>
+                    <p>You get a clear, detailed quote within 48 hours.</p>
+                </div>
+                <div class="process-step fade-in">
+                    <div class="process-number">03</div>
+                    <h4>Build</h4>
+                    <p>I build your website or system while you focus on your business.</p>
+                </div>
+                <div class="process-step fade-in">
+                    <div class="process-number">04</div>
+                    <h4>Launch</h4>
+                    <p>Go live with training and support. You're ready to grow.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="examples">
+        <div class="section-inner">
+            <div class="section-label">Work Examples</div>
+            <h2 class="section-title">What We <span class="highlight">Deliver</span></h2>
+            <p class="section-intro">Real solutions for real Irish businesses. (Generic examples—actual projects would be shown)</p>
+            
+            <div class="examples-grid">
+                <div class="example-card fade-in">
+                    <div class="example-header">
+                        <h4>Local Plumbing Business</h4>
+                        <span class="example-type">Website + Booking</span>
+                    </div>
+                    <p>A 3-page website with online booking system for a Dublin plumber. Customers can book slots directly, reducing phone calls by 70%.</p>
+                    <div class="example-result">// Result: +40% new customer inquiries in first month</div>
+                </div>
+                <div class="example-card fade-in">
+                    <div class="example-header">
+                        <h4>Mobile Hairdresser</h4>
+                        <span class="example-type">Website + Automation</span>
+                    </div>
+                    <p>Simple booking site with automated SMS reminders and follow-up messages. No-shows dropped from 20% to under 5%.</p>
+                    <div class="example-result">// Result: Saved 5+ hours/week on admin</div>
+                </div>
+                <div class="example-card fade-in">
+                    <div class="example-header">
+                        <h4>Personal Trainer</h4>
+                        <span class="example-type">Online Shop</span>
+                    </div>
+                    <p>E-commerce setup selling training programs and merchandise. Automated delivery of digital products—income while sleeping.</p>
+                    <div class="example-result">// Result: €2,000+ monthly passive revenue</div>
+                </div>
+                <div class="example-card fade-in">
+                    <div class="example-header">
+                        <h4>Trade Business CRM</h4>
+                        <span class="example-type">Automation System</span>
+                    </div>
+                    <p>Custom CRM with automated quote generation, job scheduling, and customer follow-ups. Everything runs on autopilot.</p>
+                    <div class="example-result">// Result: Replaced 3 separate apps with 1 system</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta" id="contact">
+        <div class="cta-box">
+            <h2>Ready to grow your business?</h2>
+            <p>Whether you need a new website, want to automate your bookings, or just want to chat about what's possible—let's talk.</p>
+            <a href="mailto:kieran@plurino.com" class="cta-email">
+                kierand@plurino.com
+                <span>→</span>
+            </a>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">Also available: hello@plurino.com</p>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="logo">Plur<span>.</span>ino</div>
+        <p>Web Development & Automation for Irish Small Businesses</p>
+        <p class="sub">// Dublin, Ireland — Serving Irish SMBs</p>
+    </footer>
+    
+    <script>
+        // Matrix-style animated background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        const particleCount = 60;
+        const colors = ['#00ff41', '#00d4ff', '#169B62', '#FF883E', '#0080ff'];
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.alpha = Math.random() * 0.4 + 0.1;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                if (this.x < 0 || this.x > width) this.speedX *= -1;
+                if (this.y < 0 || this.y > height) this.speedY *= -1;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function drawGrid() {
+            const gridSize = 70;
+            ctx.strokeStyle = 'rgba(0, 255, 65, 0.02)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 180) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 255, 65, ${0.08 * (1 - dist / 180)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        let frame = 0;
+        function animate() {
+            ctx.fillStyle = 'rgba(3, 3, 8, 0.08)';
+            ctx.fillRect(0, 0, width, height);
+            
+            if (frame % 3 === 0) {
+                drawGrid();
+            }
+            
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            drawConnections();
+            
+            frame++;
+            requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+        
+        resize();
+        initParticles();
+        animate();
+        
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
